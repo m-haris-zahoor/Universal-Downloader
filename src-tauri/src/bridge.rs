@@ -28,6 +28,11 @@ fn origin_ok(o: &str) -> bool {
 
 fn handle(app: AppHandle, mut req: Request) {
     let origin = req.headers().iter().find(|h| h.field.equiv("Origin")).map(|h| h.value.to_string()).unwrap_or_default();
+    // Chrome omits Origin on extension GETs; /ping reveals nothing and sends no CORS headers to web pages.
+    if origin.is_empty() && req.method() == &Method::Get && req.url().split('?').next() == Some("/ping") {
+        let _ = req.respond(Response::from_string("{\"ok\":true,\"app\":\"universal-downloader\"}").with_header(hdr("Content-Type", "application/json")));
+        return;
+    }
     if !origin_ok(&origin) {
         let _ = req.respond(Response::from_string("forbidden").with_status_code(403));
         return;

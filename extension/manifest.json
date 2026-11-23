@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "Universal Downloader",
+  "version": "1.0.0",
+  "description": "Send videos and audio from any page to the Universal Downloader desktop app.",
+  "permissions": ["contextMenus", "activeTab"],
+  "host_permissions": ["http://127.0.0.1:17893/*"],
+  "background": { "service_worker": "background.js", "scripts": ["background.js"] },
+  "action": { "default_title": "Universal Downloader", "default_popup": "popup.html", "default_icon": { "16": "icons/16.png", "48": "icons/48.png" } },
+  "content_scripts": [{ "matches": ["http://*/*", "https://*/*"], "js": ["content.js"], "run_at": "document_idle" }],
+  "icons": { "16": "icons/16.png", "48": "icons/48.png", "128": "icons/128.png" }
+}

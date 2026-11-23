@@ -1,0 +1,15 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="popup.css"></head>
+<body>
+  <header><b>Universal Downloader</b><span id="status" class="dot" title="Checking…"></span></header>
+  <div id="title" class="muted"></div>
+  <label>Quality
+    <select id="height">
+      <option value="">App default</option><option value="2160">2160p (4K)</option><option value="1440">1440p (2K)</option>
+      <option value="1080">1080p</option><option value="720">720p</option><option value="480">480p</option><option value="360">360p</option>
+    </select>
+  </label>
+  <div class="row"><button id="video" class="primary">Download video</button><button id="audio">Audio (MP3)</button></div>
+  <div id="msg"></div>
+  <script src="popup.js"></script>
+</body></html>

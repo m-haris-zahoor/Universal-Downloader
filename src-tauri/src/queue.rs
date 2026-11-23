@@ -165,6 +165,7 @@ pub fn build_args(req: &DownloadReq, out_dir: &str, tmp: &str, ffmpeg_dir: Optio
 fn num(s: &str) -> Option<f64> { s.trim().parse::<f64>().ok().filter(|v| v.is_finite()) }
 
 fn fail(app: &AppHandle, id: &str, msg: String) {
+    eprintln!("job {id} failed: {msg}");
     with_job(app, id, |j| {
         if matches!(j.status, Status::Downloading | Status::Processing) {
             j.status = Status::Failed; j.error = Some(msg); j.speed = None; j.eta = None; j.pid = None;

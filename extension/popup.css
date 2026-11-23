@@ -1,0 +1,10 @@
+:root { color-scheme: dark; }
+body { width: 320px; margin: 0; padding: 16px; background: #0c0d10; color: #e8eaef; font: 13px system-ui, -apple-system, sans-serif; }
+header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 14px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: #8b91a1; } .dot.on { background: #4ade80; } .dot.off { background: #f87171; }
+.muted { color: #8b91a1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 12px; }
+label { display: block; color: #8b91a1; font-size: 12px; margin-bottom: 12px; }
+select { display: block; width: 100%; margin-top: 5px; height: 34px; border-radius: 10px; background: #1b1e25; color: #e8eaef; border: 1px solid #262a33; padding: 0 8px; }
+.row { display: flex; gap: 8px; } button { flex: 1; height: 36px; border-radius: 10px; border: 1px solid #262a33; background: #1b1e25; color: #e8eaef; cursor: pointer; font-weight: 500; }
+button.primary { background: #7c8bff; color: #0c0d10; border: 0; } button:disabled { opacity: .5; }
+#msg { margin-top: 10px; min-height: 16px; font-size: 12px; color: #8b91a1; } #msg.err { color: #f87171; } #msg.ok { color: #4ade80; }

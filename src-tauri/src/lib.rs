@@ -1,5 +1,6 @@
 mod analyze;
 mod bins;
+mod bridge;
 mod db;
 mod queue;
 
@@ -140,6 +141,12 @@ pub fn run() {
                 settings: Mutex::new(settings),
                 jobs: Mutex::new(vec![]),
                 cache_dir: app.path().app_cache_dir()?,
+            });
+            bridge::start(app.handle().clone());
+            // Warm up bundled tools: macOS scans each new binary on first launch, which can take a while.
+            let h = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                for n in ["yt-dlp", "ffmpeg", "ffprobe"] { let _ = bins::tool_info(&h, n).await; }
             });
             Ok(())
         })

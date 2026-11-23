@@ -9,7 +9,7 @@ pub const PORT: u16 = 17893;
 
 pub fn start(app: AppHandle) {
     std::thread::spawn(move || {
-        let server = match Server::http(("127.0.0.1", PORT)) {
+        let server = match Server::http(("127.0.0.1", std::env::var("UD_PORT").ok().and_then(|p| p.parse().ok()).unwrap_or(PORT))) {
             Ok(s) => s,
             Err(e) => { eprintln!("bridge: cannot listen on {PORT}: {e}"); return; }
         };
@@ -52,10 +52,14 @@ fn handle(app: AppHandle, mut req: Request) {
             let mut body = String::new();
             let _ = req.as_reader().take(65536).read_to_string(&mut body);
             let v: serde_json::Value = serde_json::from_str(&body).unwrap_or_default();
-            let out = tauri::async_runtime::block_on(quick_enqueue(&app, &v));
-            match out {
-                Ok(title) => reply(req, 200, serde_json::json!({"ok": true, "title": title})),
-                Err(e) => reply(req, 200, serde_json::json!({"ok": false, "error": e})),
+            let url = v["url"].as_str().unwrap_or("").to_string();
+            if let Err(e) = analyze::validate_url(&url) {
+                return reply(req, 200, serde_json::json!({"ok": false, "error": e}));
+            }
+            // Reply right away; reading media info can take a while. Failures show up in the app's Queue.
+            reply(req, 200, serde_json::json!({"ok": true, "title": url}));
+            if let Err(e) = tauri::async_runtime::block_on(quick_enqueue(&app, &v)) {
+                queue::add_failed(&app, &url, e);
             }
         }
         _ => reply(req, 404, serde_json::json!({"ok": false, "error": "not found"})),

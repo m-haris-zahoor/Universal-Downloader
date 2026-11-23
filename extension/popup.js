@@ -14,11 +14,11 @@ let tab;
 async function go(kind) {
   if (!tab?.url || !/^https?:/.test(tab.url)) { $("msg").className = "err"; $("msg").textContent = "This page can't be downloaded."; return; }
   document.querySelectorAll("button").forEach((b) => (b.disabled = true));
-  $("msg").className = ""; $("msg").textContent = "Reading media info…";
+  $("msg").className = ""; $("msg").textContent = "Sending…";
   const h = $("height").value;
   const res = await api.runtime.sendMessage({ type: "download", url: tab.url, kind, height: h ? Number(h) : undefined });
   $("msg").className = res?.ok ? "ok" : "err";
-  $("msg").textContent = res?.ok ? "Added to queue: " + res.title : res?.error || "Failed";
+  $("msg").textContent = res?.ok ? "Sent to the app — check its Queue tab." : res?.error || "Failed";
   document.querySelectorAll("button").forEach((b) => (b.disabled = false));
 }
 $("video").onclick = () => go("video");

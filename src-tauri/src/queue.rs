@@ -69,6 +69,13 @@ pub fn enqueue(app: &AppHandle, req: DownloadReq) -> Result<String, String> {
     Ok(id)
 }
 
+pub fn add_failed(app: &AppHandle, url: &str, msg: String) {
+    let req = DownloadReq { url: url.into(), title: url.into(), thumbnail: None, platform: "Browser".into(), kind: "video".into(), height: None, container: "mp4".into(), audio_format: "mp3".into(), audio_bitrate: None, est_size: None, hq: false };
+    let job = Job { id: uuid::Uuid::new_v4().to_string(), req, status: Status::Failed, percent: 0.0, downloaded: 0, total: None, speed: None, eta: None, error: Some(msg), file_path: None, pid: None };
+    app.state::<AppState>().jobs.lock().unwrap().push(job);
+    emit(app);
+}
+
 pub fn pump(app: &AppHandle) {
     let st = app.state::<AppState>();
     let max = st.settings.lock().unwrap().max_concurrent.clamp(1, 10);

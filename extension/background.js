@@ -8,7 +8,7 @@ async function ping() {
 
 async function post(payload) {
   try {
-    const r = await fetch(BASE + "/enqueue", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+    const r = await fetch(BASE + "/enqueue", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload), signal: AbortSignal.timeout(15000) });
     return await r.json();
   } catch { return { ok: false, error: OFFLINE, offline: true }; }
 }

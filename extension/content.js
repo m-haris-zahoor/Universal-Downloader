@@ -17,7 +17,7 @@
       btn.textContent = "Sending…";
       try {
         const res = await api.runtime.sendMessage({ type: "download", url: location.href, src: current?.currentSrc, kind: "video" });
-        btn.textContent = res?.ok ? "✓ Added to queue" : "⚠ " + (res?.error || "Failed");
+        btn.textContent = res?.ok ? "✓ Sent to app" : "⚠ " + (res?.error || "Failed");
       } catch { btn.textContent = "⚠ Extension error"; }
       setTimeout(() => { btn.textContent = "⬇ Download"; }, 2800);
     });

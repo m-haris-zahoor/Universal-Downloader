@@ -21,4 +21,4 @@ The desktop app listens on `127.0.0.1:17893` (extension origins only). The exten
 - **Safari (macOS):** install Xcode, run `scripts/safari-extension.sh`, Run the project in Xcode, enable it in Safari → Settings → Extensions.
 
 ## Vocal Remover
-Splits a song into vocals + instrumental offline using [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) with the UVR-MDX-NET Voc_FT model (`separator`, ONNX Runtime library and `uvr.onnx` in `resources/bin`). Output: `<download folder>/Separated/`.
+Splits a song into vocals + instrumental offline using [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) with two UVR-MDX-NET models: Voc_FT (`uvr.onnx`) for vocals and Inst_HQ_3 (`inst.onnx`) for the instrumental, plus `separator` and the ONNX Runtime library in `resources/bin`. Output: `<download folder>/Separated/`.

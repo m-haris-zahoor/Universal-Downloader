@@ -93,8 +93,8 @@ fn open_download_dir(app: AppHandle, st: State<AppState>) -> R<()> {
 }
 
 #[tauri::command]
-fn sep_start(app: AppHandle, path: String, format: String) -> R<()> {
-    separate::start(&app, path, format)
+fn sep_start(app: AppHandle, path: String, format: String, even: bool) -> R<()> {
+    separate::start(&app, path, format, even)
 }
 
 #[tauri::command]

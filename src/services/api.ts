@@ -34,7 +34,7 @@ export interface SepJob {
 }
 
 export const api = {
-  sepStart: (path: string, format: string) => invoke<void>("sep_start", { path, format }),
+  sepStart: (path: string, format: string, even: boolean) => invoke<void>("sep_start", { path, format, even }),
   sepList: () => invoke<SepJob[]>("sep_list"),
   sepCancel: (id: string) => invoke<void>("sep_cancel", { id }),
   sepRemove: (id: string) => invoke<void>("sep_remove", { id }),

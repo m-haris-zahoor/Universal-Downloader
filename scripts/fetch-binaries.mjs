@@ -28,4 +28,5 @@ for (const d of ["bin", "lib"])
   for (const f of readdirSync(join(pkg, d)).filter((f) => f.endsWith(".dll"))) copyFileSync(join(pkg, d, f), join(bin, f));
 rmSync("sherpa.tar.bz2"); rmSync(pkg, { recursive: true });
 await get(`${rel}/source-separation-models/UVR-MDX-NET-Voc_FT.onnx`, join(bin, "uvr.onnx"));
+await get(`${rel}/source-separation-models/UVR-MDX-NET-Inst_HQ_3.onnx`, join(bin, "inst.onnx"));
 console.log(readdirSync(bin));

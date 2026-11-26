@@ -15,6 +15,7 @@ pub struct SepJob {
     pub name: String,
     pub input: String,
     pub format: String,
+    pub even: bool,
     pub status: SepStatus,
     pub started_at: Option<u64>,
     pub vocals: Option<String>,
@@ -48,14 +49,14 @@ fn update(app: &AppHandle, id: &str, f: impl FnOnce(&mut SepJob)) -> bool {
     ok
 }
 
-pub fn start(app: &AppHandle, path: String, format: String) -> Result<(), String> {
+pub fn start(app: &AppHandle, path: String, format: String, even: bool) -> Result<(), String> {
     let p = Path::new(&path);
     if !p.is_absolute() || !p.is_file() { return Err("File not found.".into()); }
     if !["mp3", "wav", "flac", "m4a"].contains(&format.as_str()) { return Err("Unsupported output format.".into()); }
     let id = uuid::Uuid::new_v4().to_string();
     let name = p.file_stem().and_then(|s| s.to_str()).unwrap_or("track").to_string();
     app.state::<SepState>().jobs.lock().unwrap().push(SepJob {
-        id: id.clone(), name, input: path, format, status: SepStatus::Queued, started_at: None, vocals: None, instrumental: None, error: None, pid: None,
+        id: id.clone(), name, input: path, format, even, status: SepStatus::Queued, started_at: None, vocals: None, instrumental: None, error: None, pid: None,
     });
     emit(app);
     let app = app.clone();
@@ -111,7 +112,8 @@ async fn run(app: &AppHandle, id: &str, tmp: &Path) -> Result<(), String> {
     let ffmpeg = bins::find(app, "ffmpeg").ok_or("FFmpeg was not found.")?;
     let engine = bins::find(app, "separator").ok_or("The vocal separation engine is not installed.")?;
     let model = engine.with_file_name("uvr.onnx");
-    if !model.is_file() { return Err("The vocal separation model is missing.".into()); }
+    let inst_model = engine.with_file_name("inst.onnx");
+    if !model.is_file() || !inst_model.is_file() { return Err("A vocal separation model is missing.".into()); }
     std::fs::create_dir_all(tmp).map_err(|e| e.to_string())?;
     let s = |p: &Path| p.display().to_string();
     let (input, voc, ins) = (tmp.join("input.wav"), tmp.join("vocals.wav"), tmp.join("instrumental.wav"));
@@ -122,11 +124,18 @@ async fn run(app: &AppHandle, id: &str, tmp: &Path) -> Result<(), String> {
 
     if !update(app, id, |j| j.status = SepStatus::Separating) { return Ok(()); }
     let threads = std::thread::available_parallelism().map(|n| n.get().min(8)).unwrap_or(4);
-    let args = vec![
-        format!("--uvr-model={}", s(&model)), format!("--num-threads={threads}"), format!("--input-wav={}", s(&input)),
-        format!("--output-vocals-wav={}", s(&voc)), format!("--output-accompaniment-wav={}", s(&ins)),
-    ];
-    step(app, id, &engine, &args, "Separation").await?;
+    // Two models: each is only trusted for the stem it was trained to predict.
+    // The engine writes a model's own prediction to --output-vocals-wav, so for the
+    // instrumental model that slot holds the instrumental.
+    let unused = tmp.join("unused.wav");
+    for (model, target) in [(&model, &voc), (&inst_model, &ins)] {
+        let args = vec![
+            format!("--uvr-model={}", s(model)), format!("--num-threads={threads}"), format!("--input-wav={}", s(&input)),
+            format!("--output-vocals-wav={}", s(target)), format!("--output-accompaniment-wav={}", s(&unused)),
+        ];
+        step(app, id, &engine, &args, "Separation").await?;
+        if !update(app, id, |_| {}) { return Ok(()); }
+    }
 
     if !update(app, id, |j| j.status = SepStatus::Saving) { return Ok(()); }
     let dir = PathBuf::from(app.state::<AppState>().settings.lock().unwrap().download_dir.clone()).join("Separated");
@@ -137,6 +146,8 @@ async fn run(app: &AppHandle, id: &str, tmp: &Path) -> Result<(), String> {
         let mut args: Vec<String> = ["-v", "error", "-n", "-i", &s(src)].iter().map(|a| a.to_string()).collect();
         if job.format == "mp3" { args.extend(["-b:a".into(), "320k".into()]); }
         if job.format == "m4a" { args.extend(["-b:a".into(), "256k".into()]); }
+        // Lift passages that sound quieter once the voice is gone (limited to +12 dB).
+        if job.even && label == "Instrumental" { args.extend(["-af".into(), "dynaudnorm=f=250:g=15:p=0.95:m=4".into(), "-ar".into(), "44100".into()]); }
         args.push(s(&dst));
         step(app, id, &ffmpeg, &args, "Saving").await?;
         if !dst.exists() { return Ok(()); } // canceled

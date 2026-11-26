@@ -4,7 +4,7 @@ import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { AlertCircle, FolderOpen, Loader2, MicVocal, Music, Trash2, Upload, X } from "lucide-react";
 import { api, errMsg, type SepJob } from "../services/api";
 import { duration } from "../services/format";
-import { Button, Card, IconButton, Select } from "../components/ui";
+import { Button, Card, IconButton, Select, Toggle } from "../components/ui";
 
 const EXT = ["mp3", "wav", "flac", "m4a", "aac", "ogg", "opus", "wma", "aiff", "mp4", "mkv", "webm", "mov"];
 const label: Record<SepJob["status"], string> = {
@@ -19,12 +19,15 @@ export function Vocals({ toast }: { toast: (m: string, t?: "ok" | "err") => void
   const [now, setNow] = useState(Date.now() / 1000);
   const formatRef = useRef(format);
   formatRef.current = format;
+  const [even, setEven] = useState(false);
+  const evenRef = useRef(even);
+  evenRef.current = even;
   const run = (p: Promise<unknown>) => p.catch((e) => toast(errMsg(e), "err"));
 
   const add = (paths: string[]) => {
     const ok = paths.filter((p) => EXT.includes(p.split(".").pop()?.toLowerCase() ?? ""));
     if (!ok.length) return toast("Choose an audio or video file.", "err");
-    ok.forEach((p) => run(api.sepStart(p, formatRef.current)));
+    ok.forEach((p) => run(api.sepStart(p, formatRef.current, evenRef.current)));
   };
 
   useEffect(() => {
@@ -61,6 +64,11 @@ export function Vocals({ toast }: { toast: (m: string, t?: "ok" | "err") => void
           </Select></div>
           <Button variant="primary" onClick={pick}><Music size={16} />Choose files</Button>
         </div>
+        <div className="mt-4 flex items-center justify-center gap-3 text-sm">
+          <Toggle checked={even} onChange={setEven} />
+          <span>Even out instrumental volume</span>
+        </div>
+        <p className="text-xs text-muted mt-1">Boosts quieter parts. Can also make soft intros or outros louder.</p>
         <p className="text-xs text-muted mt-4">A song can take a few minutes, depending on your computer. Only use music you have the right to edit.</p>
       </Card>
 

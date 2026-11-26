@@ -3,6 +3,7 @@ mod bins;
 mod bridge;
 mod db;
 mod queue;
+mod separate;
 
 use queue::{AppState, DownloadReq};
 use serde::Serialize;
@@ -91,6 +92,26 @@ fn open_download_dir(app: AppHandle, st: State<AppState>) -> R<()> {
     app.opener().open_path(d, None::<&str>).map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+fn sep_start(app: AppHandle, path: String, format: String) -> R<()> {
+    separate::start(&app, path, format)
+}
+
+#[tauri::command]
+fn sep_list(app: AppHandle) -> Vec<separate::SepJob> {
+    separate::list(&app)
+}
+
+#[tauri::command]
+fn sep_cancel(app: AppHandle, id: String) {
+    separate::cancel(&app, &id);
+}
+
+#[tauri::command]
+fn sep_remove(app: AppHandle, id: String) {
+    separate::remove(&app, &id);
+}
+
 #[derive(Serialize)]
 struct Tools { ytdlp: bins::ToolInfo, ffmpeg: bins::ToolInfo, ffprobe: bins::ToolInfo }
 
@@ -142,6 +163,7 @@ pub fn run() {
                 jobs: Mutex::new(vec![]),
                 cache_dir: app.path().app_cache_dir()?,
             });
+            app.manage(separate::SepState::default());
             bridge::start(app.handle().clone());
             // Warm up bundled tools: macOS scans each new binary on first launch, which can take a while.
             let h = app.handle().clone();
@@ -152,7 +174,8 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             analyze, enqueue, list_jobs, job_control, remove_jobs, get_settings, save_settings,
-            get_history, delete_history, open_file, reveal_file, open_download_dir, tool_status, clear_cache
+            get_history, delete_history, open_file, reveal_file, open_download_dir, tool_status, clear_cache,
+            sep_start, sep_list, sep_cancel, sep_remove
         ])
         .run(tauri::generate_context!())
         .expect("error while running application");

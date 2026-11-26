@@ -27,7 +27,18 @@ export interface Settings {
 export interface ToolInfo { name: string; found: boolean; path: string | null; version: string | null }
 export interface Tools { ytdlp: ToolInfo; ffmpeg: ToolInfo; ffprobe: ToolInfo }
 
+export interface SepJob {
+  id: string; name: string; input: string; format: string;
+  status: "queued" | "preparing" | "separating" | "saving" | "completed" | "failed" | "canceled";
+  started_at: number | null; vocals: string | null; instrumental: string | null; error: string | null;
+}
+
 export const api = {
+  sepStart: (path: string, format: string) => invoke<void>("sep_start", { path, format }),
+  sepList: () => invoke<SepJob[]>("sep_list"),
+  sepCancel: (id: string) => invoke<void>("sep_cancel", { id }),
+  sepRemove: (id: string) => invoke<void>("sep_remove", { id }),
+  onSep: (cb: (jobs: SepJob[]) => void) => listen<SepJob[]>("sep-update", (e) => cb(e.payload)),
   analyze: (url: string) => invoke<MediaInfo>("analyze", { url }),
   enqueue: (req: DownloadReq) => invoke<string>("enqueue", { req }),
   listJobs: () => invoke<Job[]>("list_jobs"),

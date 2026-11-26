@@ -1,10 +1,11 @@
-import { Download, History, ListChecks, Settings as Cog, ArrowDownToLine } from "lucide-react";
+import { Download, History, ListChecks, Settings as Cog, ArrowDownToLine, MicVocal } from "lucide-react";
 import { motion } from "framer-motion";
 
-export type Page = "home" | "queue" | "history" | "settings";
+export type Page = "home" | "queue" | "vocals" | "history" | "settings";
 const items: { id: Page; label: string; icon: typeof Download }[] = [
   { id: "home", label: "Home", icon: Download },
   { id: "queue", label: "Queue", icon: ListChecks },
+  { id: "vocals", label: "Vocal Remover", icon: MicVocal },
   { id: "history", label: "History", icon: History },
   { id: "settings", label: "Settings", icon: Cog },
 ];

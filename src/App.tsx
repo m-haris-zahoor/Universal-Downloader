@@ -7,6 +7,7 @@ import { isUrl } from "./services/format";
 import { Sidebar, type Page } from "./components/Sidebar";
 import { Home } from "./pages/Home";
 import { Queue } from "./pages/Queue";
+import { Vocals } from "./pages/Vocals";
 import { HistoryPage } from "./pages/History";
 import { SettingsPage } from "./pages/Settings";
 
@@ -66,6 +67,7 @@ export default function App() {
           <motion.div key={page} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
             {page === "home" && <Home settings={settings} clip={clip} clearClip={() => setClip(null)} toast={showToast} goQueue={() => setPage("queue")} />}
             {page === "queue" && <Queue jobs={jobs} />}
+            {page === "vocals" && <Vocals toast={showToast} />}
             {page === "history" && <HistoryPage version={histVer} toast={showToast} />}
             {page === "settings" && <SettingsPage settings={settings} update={update} toast={showToast} />}
           </motion.div>

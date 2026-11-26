@@ -17,3 +17,15 @@ const dir = readdirSync(".").find((d) => d.startsWith("ffmpeg-master-latest-win6
 for (const f of ["ffmpeg.exe", "ffprobe.exe"]) copyFileSync(join(dir, "bin", f), join(bin, f));
 rmSync("ffmpeg.zip"); rmSync(dir, { recursive: true });
 console.log(readdirSync(bin));
+
+// Vocal separation: sherpa-onnx engine + UVR-MDX model.
+const rel = "https://github.com/k2-fsa/sherpa-onnx/releases/download";
+const pkg = "sherpa-onnx-v2.0.3-win-x64-shared-MT-Release-no-tts";
+await get(`${rel}/v2.0.3/${pkg}.tar.bz2`, "sherpa.tar.bz2");
+execSync("tar -xf sherpa.tar.bz2", { stdio: "inherit" });
+copyFileSync(join(pkg, "bin", "sherpa-onnx-offline-source-separation.exe"), join(bin, "separator.exe"));
+for (const d of ["bin", "lib"])
+  for (const f of readdirSync(join(pkg, d)).filter((f) => f.endsWith(".dll"))) copyFileSync(join(pkg, d, f), join(bin, f));
+rmSync("sherpa.tar.bz2"); rmSync(pkg, { recursive: true });
+await get(`${rel}/source-separation-models/UVR-MDX-NET-Voc_FT.onnx`, join(bin, "uvr.onnx"));
+console.log(readdirSync(bin));

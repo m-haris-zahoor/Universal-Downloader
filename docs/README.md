@@ -19,3 +19,6 @@ Locally on Windows: `node scripts/fetch-binaries.mjs && npx tauri build --bundle
 The desktop app listens on `127.0.0.1:17893` (extension origins only). The extension adds a toolbar popup, right-click menu and a Download button over videos; it sends the page URL to the app, which queues it with your default settings. The app must be running.
 - **Chrome/Edge/Brave:** `chrome://extensions` → Developer mode → Load unpacked → select `extension/` (or use the zip).
 - **Safari (macOS):** install Xcode, run `scripts/safari-extension.sh`, Run the project in Xcode, enable it in Safari → Settings → Extensions.
+
+## Vocal Remover
+Splits a song into vocals + instrumental offline using [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) with the UVR-MDX-NET Voc_FT model (`separator`, ONNX Runtime library and `uvr.onnx` in `resources/bin`). Output: `<download folder>/Separated/`.
